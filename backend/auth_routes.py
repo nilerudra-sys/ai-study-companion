@@ -35,30 +35,30 @@ class UpdateProgressRequest(BaseModel):
 
 @router.post("/signup")
 def signup(request: SignupRequest):
-    db = get_db()
-    existing_user = get_user_by_email(db, request.email)
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+    with get_db() as db:
+        existing_user = get_user_by_email(db, request.email)
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
         
-    hashed_pw = hash_password(request.password)
-    try:
-        user_id = create_user(db, request.username, request.email, hashed_pw)
-        user = get_user_by_id(db, user_id)
-        return {"message": "Signup successful", "user": user.to_dict(), "token": f"dummy-token-{user_id}"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Signup failed: {str(e)}")
+        hashed_pw = hash_password(request.password)
+        try:
+            user_id = create_user(db, request.username, request.email, hashed_pw)
+            user = get_user_by_id(db, user_id)
+            return {"message": "Signup successful", "user": user.to_dict(), "token": f"dummy-token-{user_id}"}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Signup failed: {str(e)}")
 
 @router.post("/login")
 def login(request: LoginRequest):
-    db = get_db()
-    user = get_user_by_email(db, request.email)
-    if not user:
-        raise HTTPException(status_code=400, detail="Invalid email or password")
-        
-    if user.password_hash != hash_password(request.password):
-        raise HTTPException(status_code=400, detail="Invalid email or password")
-        
-    return {"message": "Login successful", "user": user.to_dict(), "token": f"dummy-token-{user.id}"}
+    with get_db() as db:
+        user = get_user_by_email(db, request.email)
+        if not user:
+            raise HTTPException(status_code=400, detail="Invalid email or password")
+            
+        if user.password_hash != hash_password(request.password):
+            raise HTTPException(status_code=400, detail="Invalid email or password")
+            
+        return {"message": "Login successful", "user": user.to_dict(), "token": f"dummy-token-{user.id}"}
 
 @router.post("/update-progress")
 def update_progress(request: UpdateProgressRequest):

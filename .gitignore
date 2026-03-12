@@ -30,3 +30,5 @@ node_modules/
 
 # Frontend build artifacts (Vite)
 frontend-retro/dist/
+.vercel
+.env*.local

@@ -177,27 +177,27 @@ async def submit_quiz(request: QuizSubmitRequest) -> ProgressResponse:
     points_earned = calculate_points_for_quiz(score)
     wrong_count = max(len(request.questions) - correct_count, 0)
 
-    db = get_db()
-    record_quiz_attempt(
-        db=db,
-        student_id=request.student_id,
-        topic=request.topic,
-        score=score,
-        points_earned=points_earned,
-    )
-    save_quiz_attempt(
-        db=db,
-        user_id=request.student_id,
-        topic=request.topic,
-        correct_answers=correct_count,
-        wrong_answers=wrong_count,
-        total_questions=len(request.questions),
-        score=score,
-    )
+    with get_db() as db:
+        record_quiz_attempt(
+            db=db,
+            student_id=request.student_id,
+            topic=request.topic,
+            score=score,
+            points_earned=points_earned,
+        )
+        save_quiz_attempt(
+            db=db,
+            user_id=request.student_id,
+            topic=request.topic,
+            correct_answers=correct_count,
+            wrong_answers=wrong_count,
+            total_questions=len(request.questions),
+            score=score,
+        )
 
-    progress = get_student_progress(db, request.student_id)
-    level = get_level_from_points(progress.total_points)
-    badges = Badge.from_progress(progress)
+        progress = get_student_progress(db, request.student_id)
+        level = get_level_from_points(progress.total_points)
+        badges = Badge.from_progress(progress)
 
     return ProgressResponse(
         student_id=request.student_id,

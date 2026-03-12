@@ -2,7 +2,13 @@
 
 // Use Vite environment variable for the API base URL so this can be configured
 // in deployment environments (e.g., Vercel) without code changes.
-const BASE_URL = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api';
+//
+// The environment variable should be set to the FULL API base path including /api.
+// For example: https://my-backend.railway.app/api
+// When running locally, set VITE_API_URL in a local `.env` file (e.g., http://localhost:8000/api)
+// When deployed, set VITE_API_URL in Vercel to your Railway backend URL.
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+const BASE_URL = API_URL;
 
 export const api = {
   
