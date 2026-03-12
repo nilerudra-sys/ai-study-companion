@@ -52,45 +52,6 @@ streamlit run frontend/app.py
 
 The Streamlit UI will open in your browser and communicate with the FastAPI backend.
 
-## Deployment (Docker)
-
-A simple way to deploy this project is using Docker + Docker Compose. This package includes:
-
-- `Dockerfile.backend` – builds the FastAPI API server
-- `Dockerfile.frontend` – builds the Streamlit UI
-- `docker-compose.yml` – wires both services together
-
-### 1) Build & start
-
-From the project root:
-
-```bash
-docker compose up --build
-```
-
-This exposes:
-
-- Backend API: `http://localhost:8000`
-- Frontend UI: `http://localhost:8501`
-
-### 2) Configure your API key
-
-Set the required LLM API key as an environment variable before running (or via your cloud provider):
-
-```bash
-export ANTHROPIC_API_KEY=your_anthropic_api_key_here
-export ANTHROPIC_MODEL=claude-3-haiku-20240307
-```
-
-On Windows PowerShell:
-
-```powershell
-$Env:ANTHROPIC_API_KEY="your_anthropic_api_key_here"
-$Env:ANTHROPIC_MODEL="claude-3-haiku-20240307"
-```
-
-> Note: The frontend is configured to talk to the backend via `API_BASE` (defaults to `http://127.0.0.1:8000/api`). When using Docker Compose this is automatically set to `http://backend:8000/api`.
-
 ## Deployment to Railway (backend)
 
 This repo includes a `Procfile` and `railway.json` to make deploying the FastAPI backend to Railway straightforward.
