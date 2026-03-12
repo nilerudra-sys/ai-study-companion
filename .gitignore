@@ -1,5 +1,6 @@
 # Secrets
 .env
+frontend-retro/.env
 
 # Python
 __pycache__/
@@ -23,7 +24,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Frontend build artifacts (Vite)
-frontend-retro/node_modules/
-frontend-retro/dist/
+# Node / frontend build artifacts
+node_modules/
+**/node_modules/
 
+# Frontend build artifacts (Vite)
+frontend-retro/dist/
