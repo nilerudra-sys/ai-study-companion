@@ -1,0 +1,29 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# SQLite / local data
+database/*.db
+*.sqlite
+*.sqlite3
+
+# Logs / debug artifacts
+*.log
+route-error.log
+error.log
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Frontend build artifacts (Vite)
+frontend-retro/node_modules/
+frontend-retro/dist/
+

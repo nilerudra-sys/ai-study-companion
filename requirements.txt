@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+streamlit
+anthropic>=0.39.0
+python-dotenv
+sqlite-utils
+httpx
+crewai
+langchain-anthropic

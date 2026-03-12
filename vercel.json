@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "name": "ai-study-companion",
+  "builds": [
+    {
+      "src": "frontend-retro/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "frontend-retro/dist" }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/" }
+  ]
+}

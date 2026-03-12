@@ -1,0 +1,14 @@
+{
+  "plugins": [
+    {
+      "name": "python",
+      "options": {
+        "version": "3.12"
+      }
+    }
+  ],
+  "deploy": {
+    "buildCommand": "pip install -r requirements.txt",
+    "startCommand": "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+  }
+}
