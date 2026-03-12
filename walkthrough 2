@@ -1,0 +1,32 @@
+# Retro "Pokémon FireRed" Style Web UI & Backend Integration
+
+The AI Study Companion has been successfully transformed into a full-stack gamified application!
+
+## 1. Homepage & Animated Background
+A responsive `<HomePage />` was added as the initial landing screen:
+- **Design Elements**: Retro styling with pixel-perfect typography (`Press Start 2P`).
+- **RetroBackground Animation**: A custom CSS keyframe animation looping 8-bit clouds drifting horizontally across the "sky" and a grassy landscape texture scrolling seamlessly across the bottom. This acts as a subtle, nostalgic base layer that doesn’t distract from the core text.
+- **Routing**: Pressing the pulsing "START LEARNING" button transitions the view into the main dashboard application.
+
+## 2. API Wiring (React to FastAPI)
+The simulated dummy data in the React app has been stripped out. The frontend now communicates directly with the Python `backend/` using the new [api.js](file:///c:/Users/ASUS/OneDrive/Desktop/ai%20learn/ai-study-companion/frontend-retro/src/api.js) fetch layer:
+
+*   **Top HUD state**: On load, [App.jsx](file:///c:/Users/ASUS/OneDrive/Desktop/ai%20learn/ai-study-companion/frontend-retro/src/App.jsx) immediately calls the backend `/progress/retro-student` endpoint to grab the latest `total_points` (mapped to visual XP and Coins), player Level, and achieved badges from the SQLite database.
+*   **Chat Tutor**: User inputs in the Chat Tutor now trigger a `POST /explain` to the backend. The actual OpenAI/LLM response is returned and rendered in the RPG dialogue box.
+*   **Quiz Battle**:
+    *   Starting a quiz battle calls `POST /quiz` internally fetching unique questions dynamically. 
+    *   Answering the quiz questions tracks selections, and upon finishing, sends a `POST /quiz/submit` to process the score, officially level up the character in DB, and mint any new Badges!
+
+## Run the Fully Functional App
+
+To test everything end-to-end:
+
+1. **Start the Backend server** (from the project root):
+   ```bash
+   python -m uvicorn backend.main:app --reload
+   ```
+2. **Start the Frontend development server** (from `frontend-retro/`):
+   ```bash
+   npm run dev
+   ```
+3.  Open `http://localhost:5173/` in your browser. Start on the new Homepage, admire the looping clouds, and launch into the fully functional AI concept chat and quizzes!
