@@ -2,14 +2,27 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
 
-from .ai_service import explain_concept, chat_answer
-from .quiz_generator import generate_quiz, generate_expert_quiz
-from .ai_service import generate_professor_advice
-from .gamification import (
-    calculate_points_for_quiz,
-    get_level_from_points,
-    Badge,
-)
+# The project can be run either from the repo root (as a package) or from within
+# the backend folder (as a module). Support both import styles.
+try:
+    # Root-level package import (used when running from repo root).
+    from backend.ai_service import explain_concept, chat_answer, generate_professor_advice
+    from backend.quiz_generator import generate_quiz, generate_expert_quiz
+    from backend.gamification import (
+        calculate_points_for_quiz,
+        get_level_from_points,
+        Badge,
+    )
+except ImportError:
+    # Module-level import (used when running from inside backend/).
+    from ai_service import explain_concept, chat_answer, generate_professor_advice
+    from quiz_generator import generate_quiz, generate_expert_quiz
+    from gamification import (
+        calculate_points_for_quiz,
+        get_level_from_points,
+        Badge,
+    )
+
 from database.db import get_db
 from database.models import (
     init_db,

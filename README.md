@@ -1,140 +1,151 @@
-# Gamified AI Study Companion (Prototype)
+# Gamified AI Study Companion
 
-This is a prototype **Gamified AI Study Companion** that helps students learn AI concepts with:
+A prototype study companion with:
 
-- **AI concept explanations** (chat-style Q&A)
-- **AI-generated quizzes** for selected topics
-- **Gamification** (points, levels, badges)
-- **Progress tracking** (quiz history, scores)
+- FastAPI backend for explanations, quizzes, auth, and progress tracking
+- Streamlit prototype UI in `frontend/`
+- React + Vite frontend in `frontend-retro/`
+- SQLite for local storage
+- Anthropic for AI-powered tutoring and quiz generation
 
-The stack is:
+## Local development
 
-- **Backend**: FastAPI
-- **Frontend**: Streamlit (and a React/Vite demo in `frontend-retro/`)
-- **LLM**: Anthropic Claude via the official Python SDK
-- **Database**: SQLite
-
-## Getting Started
-
-### 1. Install dependencies
+### 1. Install backend dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure environment
+### 2. Configure environment variables
 
-Create a `.env` file in the project root (already added to the structure) and set:
+Copy `.env.example` to `.env` and fill in your values:
 
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ANTHROPIC_MODEL=claude-3-haiku-20240307
 APP_ENV=dev
+DATABASE_PATH=database/study_companion.db
+CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app
 ```
 
-### 3. Run the backend (FastAPI)
+For the React frontend, you can also copy `frontend-retro/.env.example` to `frontend-retro/.env`:
 
-From the project root:
+```bash
+VITE_API_BASE=http://127.0.0.1:8000/api
+```
+
+### 3. Run the backend
 
 ```bash
 uvicorn backend.main:app --reload
 ```
 
-This will start the API at `http://127.0.0.1:8000`.
+The API will be available at `http://127.0.0.1:8000`.
 
-### 4. Run the frontend (Streamlit)
+### 4. Run the React frontend
 
-In a separate terminal, from the project root:
+```bash
+cd frontend-retro
+npm install
+npm run dev
+```
+
+### 5. Optional Streamlit frontend
 
 ```bash
 streamlit run frontend/app.py
 ```
 
-The Streamlit UI will open in your browser and communicate with the FastAPI backend.
+## Deploy backend to Railway
 
-## Deployment to Railway (backend)
+This repo already includes `Procfile` and `railway.json` for the FastAPI app.
 
-This repo includes a `Procfile` and `railway.json` to make deploying the FastAPI backend to Railway straightforward.
+### Railway setup
 
-### 1) Link your repo to Railway
+1. Push this repo to GitHub.
+2. In Railway, create a new project from the GitHub repo.
+3. Railway should detect the Python service automatically.
+4. Set these environment variables in Railway:
 
-1. Go to https://railway.app and create a new project.
-2. Connect your GitHub repo (this project).
-3. Railway will detect the `Procfile` and run the app.
-
-### 2) Set environment variables on Railway
-
-In the Railway project settings, add:
-
-- `ANTHROPIC_API_KEY` (your Anthropic key)
-- `ANTHROPIC_MODEL` (e.g. `claude-3-haiku-20240307`)
-
-Railway provides a `PORT` environment variable automatically. The backend starts using that.
-
-### 3) Use the deployed backend URL from Railway
-
-Once deployed, Railway provides a public URL like:
-
-```
-https://<your-project>.up.railway.app
+```bash
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_MODEL=claude-3-haiku-20240307
+FRONTEND_URL=https://your-vercel-app.vercel.app
+CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app
+DATABASE_PATH=/data/study_companion.db
 ```
 
-Remember to use that URL as the API base for the frontend.
+### Important for SQLite on Railway
 
-## Deployment to Vercel (frontend)
+Railway containers do not keep local files permanently unless you mount a volume.
 
-The `vercel.json` in this repo is configured to deploy the React/Vite frontend located in `frontend-retro/`.
+To keep quiz history and user data after redeploys:
 
-### 1) Add the project to Vercel
+1. Add a Railway volume.
+2. Mount it at `/data`.
+3. Set `DATABASE_PATH=/data/study_companion.db`.
 
-1. Go to https://vercel.com and create a new project.
-2. Connect your GitHub repo.
-3. Vercel will use `vercel.json` and build `frontend-retro`.
+### Backend URL
 
-### 2) Set the backend API base in Vercel
+After deployment, Railway will give you a URL like:
 
-In Vercel project settings, add an environment variable:
+```text
+https://your-app.up.railway.app
+```
 
-- `VITE_API_BASE` = `https://<your-railway-app>.up.railway.app/api`
+Your API base for the frontend will be:
 
-This ensures the frontend talks to the Railway backend.
+```text
+https://your-app.up.railway.app/api
+```
 
-### 3) Access the live app
+Health check endpoint:
 
-Once deployed, Vercel provides a public URL where the frontend is served.
+```text
+https://your-app.up.railway.app/api/health
+```
 
-## Project Structure
+## Deploy frontend to Vercel
 
-High-level structure (matching the requested layout):
+The Vercel config in `vercel.json` is set up for the React app inside `frontend-retro/`.
+
+### Vercel setup
+
+1. Import the same GitHub repo into Vercel.
+2. Keep the repo root as-is so Vercel can use `vercel.json`.
+3. Add this environment variable in Vercel:
+
+```bash
+VITE_API_BASE=https://your-app.up.railway.app/api
+```
+
+4. Deploy.
+
+### SPA routing
+
+`vercel.json` rewrites all frontend routes to `index.html`, so client-side routes continue working after refresh.
+
+## Recommended deploy order
+
+1. Deploy the backend to Railway first.
+2. Copy the Railway public URL.
+3. Set `VITE_API_BASE` in Vercel.
+4. Deploy the frontend to Vercel.
+5. Add the final Vercel URL back into Railway as `FRONTEND_URL`.
+
+## Project structure
 
 ```text
 ai-study-companion/
-├── frontend/
-│   ├── app.py
-│   ├── chat_ui.py
-│   ├── quiz_ui.py
-│   └── progress_ui.py
-├── backend/
-│   ├── main.py
-│   ├── routes.py
-│   ├── ai_service.py
-│   ├── quiz_generator.py
-│   └── gamification.py
-├── database/
-│   ├── db.py
-│   └── models.py
-├── prompts/
-│   ├── explanation_prompt.txt
-│   └── quiz_prompt.txt
-├── utils/
-│   └── helpers.py
-├── requirements.txt
-├── .env
-└── README.md
+|-- backend/
+|-- database/
+|-- frontend/
+|-- frontend-retro/
+|-- prompts/
+|-- utils/
+|-- Procfile
+|-- railway.json
+|-- vercel.json
+|-- requirements.txt
 ```
-
-## Notes
-
-- This is a **prototype**, so the implementation is intentionally simple and easy to read.
-- You can switch to other LLM providers (e.g. Gemini) by swapping out `backend/ai_service.py` while preserving the function signatures used elsewhere.
-

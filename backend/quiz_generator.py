@@ -2,11 +2,15 @@ from typing import List
 
 from pydantic import BaseModel
 
-from .ai_service import _client, _model  # reuse client/model for simplicity
+# Support running either from the repo root (as a package) or from within backend/.
+try:
+    from backend.ai_service import _get_client, _model  # reuse client/model for simplicity
+    from backend.crew_agents import create_quiz_crew
+except ImportError:
+    from ai_service import _get_client, _model  # reuse client/model for simplicity
+    from crew_agents import create_quiz_crew
+
 from prompts import quiz_prompt
-
-
-from .crew_agents import create_quiz_crew
 
 
 
@@ -58,7 +62,7 @@ async def generate_quiz(topic: str, num_questions: int = 5, difficulty: str = "b
     
     user_prompt = f"Please generate a {num_questions}-question quiz on the topic: '{topic}'."
     
-    response = await _client.messages.create(
+    response = await _get_client().messages.create(
         model=_model,
         max_tokens=2000,
         system=system_prompt,
@@ -86,7 +90,7 @@ async def generate_expert_quiz(topic: str, num_questions: int = 5) -> List[dict]
     
     user_prompt = f"Please generate a {num_questions}-question expert-level quiz on the topic: '{topic}'."
     
-    response = await _client.messages.create(
+    response = await _get_client().messages.create(
         model=_model,
         max_tokens=2000,
         system=system_prompt,

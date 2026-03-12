@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+requests
+sqlite-utils
+openai
+anthropic
+langchain-anthropic
+crewai
+-r backend/requirements.txt
+Install dependencies from backend/requirements.txt

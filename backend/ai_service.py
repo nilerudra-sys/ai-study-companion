@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -7,10 +8,25 @@ from anthropic import AsyncAnthropic
 from prompts import explanation_prompt
 
 
-load_dotenv()
+# Ensure `.env` from the repo root is loaded even when running from `backend/`.
+ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(dotenv_path=ROOT / ".env")
 
-_client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+API_KEY = os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
 _model = os.getenv("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
+
+_client: Optional[AsyncAnthropic] = None
+
+
+def _get_client() -> AsyncAnthropic:
+    global _client
+    if _client is None:
+        if not API_KEY:
+            raise RuntimeError(
+                "Missing required environment variable: ANTHROPIC_API_KEY (or OPENAI_API_KEY)."
+            )
+        _client = AsyncAnthropic(api_key=API_KEY)
+    return _client
 
 
 async def explain_concept(student_id: str, question: str, topic: Optional[str] = None) -> str:
@@ -24,7 +40,7 @@ async def explain_concept(student_id: str, question: str, topic: Optional[str] =
         question=question,
     )
 
-    response = await _client.messages.create(
+    response = await _get_client().messages.create(
         model=_model,
         max_tokens=1000,
         system="You are a friendly AI tutor who explains concepts clearly to beginners.",
@@ -41,7 +57,7 @@ async def chat_answer(student_id: str, message: str) -> str:
     """
     Simple chat-style answer endpoint.
     """
-    response = await _client.messages.create(
+    response = await _get_client().messages.create(
         model=_model,
         max_tokens=1000,
         system="You are a helpful AI tutor specializing in explaining AI and ML concepts.",
@@ -82,7 +98,7 @@ async def generate_professor_advice(user_id: str, stats: dict, world_summary: di
         f"World summary: {world_summary}\n"
     )
 
-    response = await _client.messages.create(
+    response = await _get_client().messages.create(
         model=_model,
         max_tokens=350,
         system="You are Professor AI in a retro Pokémon-style learning game.",

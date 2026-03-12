@@ -5,10 +5,11 @@
     {
       "src": "frontend-retro/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "frontend-retro/dist" }
+      "config": { "distDir": "dist" }
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/" }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
