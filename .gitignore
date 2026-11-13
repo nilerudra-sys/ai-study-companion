@@ -32,3 +32,7 @@ node_modules/
 frontend-retro/dist/
 .vercel
 .env*.local
+
+# Any env file except the example
+.env.*
+!.env.example
