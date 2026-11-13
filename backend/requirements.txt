@@ -9,4 +9,4 @@ anthropic
 langchain-anthropic
 crewai
 -r backend/requirements.txt
-Install dependencies from backend/requirements.txt
+Install dependencies from backend/requirements.txtgoogle-genai>=3.3

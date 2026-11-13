@@ -22,7 +22,7 @@ Copy `.env.example` to `.env` and fill in your values:
 
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-3-haiku-20240307
+ANTHROPIC_MODEL=claude-haiku-5-5
 APP_ENV=dev
 DATABASE_PATH=database/study_companion.db
 CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
@@ -70,7 +70,7 @@ This repo already includes `Procfile` and `railway.json` for the FastAPI app.
 
 ```bash
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-3-haiku-20240307
+ANTHROPIC_MODEL=claude-haiku-5-5
 FRONTEND_URL=https://your-vercel-app.vercel.app
 CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app
 DATABASE_PATH=/data/study_companion.db

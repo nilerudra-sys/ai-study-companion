@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 # Support running either from the repo root (as a package) or from within backend/.
 try:
-    from backend.ai_service import _get_client, _model  # reuse client/model for simplicity
+    from backend.ai_service import generate_text  # reuse client/model for simplicity
     from backend.crew_agents import create_quiz_crew
 except ImportError:
-    from ai_service import _get_client, _model  # reuse client/model for simplicity
+    from ai_service import generate_text  # reuse client/model for simplicity
     from crew_agents import create_quiz_crew
 
 from prompts import quiz_prompt
@@ -49,7 +49,7 @@ async def _parse_crew_output(content: str, topic: str) -> List[dict]:
 
 async def generate_quiz(topic: str, num_questions: int = 5, difficulty: str = "beginner") -> List[dict]:
     """
-    Uses Anthropic directly to generate a small multiple-choice quiz quickly.
+    Uses the configured AI provider to generate a small multiple-choice quiz quickly.
     """
     system_prompt = (
         f"You are a helpful AI tutor creating a {difficulty}-level multiple-choice quiz. "
@@ -62,21 +62,15 @@ async def generate_quiz(topic: str, num_questions: int = 5, difficulty: str = "b
     
     user_prompt = f"Please generate a {num_questions}-question quiz on the topic: '{topic}'."
     
-    response = await _get_client().messages.create(
-        model=_model,
-        thinking={"type": "disabled"},
-        max_tokens=2000,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    text = await generate_text(system=system_prompt, prompt=user_prompt, max_tokens=2000)
     
-    content = "".join(b.text for b in response.content if b.type == "text").strip()
+    content = text.strip()
     return await _parse_crew_output(content, topic)
 
 
 async def generate_expert_quiz(topic: str, num_questions: int = 5) -> List[dict]:
     """
-    Uses Anthropic directly to generate highly difficult, reasoning-based Gym Leader questions quickly.
+    Uses the configured AI provider to generate highly difficult, reasoning-based Gym Leader questions quickly.
     """
     system_prompt = (
         "You are an expert examiner for a 'Pokemon Gym'-style assessment on advanced Machine Learning and AI topics. "
@@ -90,14 +84,8 @@ async def generate_expert_quiz(topic: str, num_questions: int = 5) -> List[dict]
     
     user_prompt = f"Please generate a {num_questions}-question expert-level quiz on the topic: '{topic}'."
     
-    response = await _get_client().messages.create(
-        model=_model,
-        thinking={"type": "disabled"},
-        max_tokens=2000,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    text = await generate_text(system=system_prompt, prompt=user_prompt, max_tokens=2000)
     
-    content = "".join(b.text for b in response.content if b.type == "text").strip()
+    content = text.strip()
     return await _parse_crew_output(content, topic)
 

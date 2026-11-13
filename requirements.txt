@@ -10,3 +10,4 @@ sqlite-utils
 httpx
 crewai
 langchain-anthropic
+google-genai>=3.3
