@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(dotenv_path=ROOT / ".env")
 
 API_KEY = os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")
-_model = os.getenv("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
+_model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5")
 
 _client: Optional[AsyncAnthropic] = None
 
@@ -42,15 +42,15 @@ async def explain_concept(student_id: str, question: str, topic: Optional[str] =
 
     response = await _get_client().messages.create(
         model=_model,
+        thinking={"type": "disabled"},
         max_tokens=1000,
         system="You are a friendly AI tutor who explains concepts clearly to beginners.",
         messages=[
             {"role": "user", "content": full_prompt},
         ],
-        temperature=0.6,
     )
 
-    return response.content[0].text.strip()
+    return "".join(b.text for b in response.content if b.type == "text").strip()
 
 
 async def chat_answer(student_id: str, message: str) -> str:
@@ -59,14 +59,14 @@ async def chat_answer(student_id: str, message: str) -> str:
     """
     response = await _get_client().messages.create(
         model=_model,
+        thinking={"type": "disabled"},
         max_tokens=1000,
         system="You are a helpful AI tutor specializing in explaining AI and ML concepts.",
         messages=[
             {"role": "user", "content": message},
         ],
-        temperature=0.7,
     )
-    return response.content[0].text.strip()
+    return "".join(b.text for b in response.content if b.type == "text").strip()
 
 
 async def generate_professor_advice(user_id: str, stats: dict, world_summary: dict) -> str:
@@ -100,10 +100,10 @@ async def generate_professor_advice(user_id: str, stats: dict, world_summary: di
 
     response = await _get_client().messages.create(
         model=_model,
+        thinking={"type": "disabled"},
         max_tokens=350,
         system="You are Professor AI in a retro Pokémon-style learning game.",
         messages=[{"role": "user", "content": user_prompt}],
-        temperature=0.5,
     )
-    return response.content[0].text.strip()
+    return "".join(b.text for b in response.content if b.type == "text").strip()
 

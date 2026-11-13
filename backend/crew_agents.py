@@ -5,7 +5,7 @@ from langchain_anthropic import ChatAnthropic
 # Need a robust agentic model
 def get_llm():
     return ChatAnthropic(
-        model=os.getenv("ANTHROPIC_MODEL", "claude-3-haiku-20240307"),
+        model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY")
     )
 

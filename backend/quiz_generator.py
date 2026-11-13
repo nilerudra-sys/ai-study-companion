@@ -64,13 +64,13 @@ async def generate_quiz(topic: str, num_questions: int = 5, difficulty: str = "b
     
     response = await _get_client().messages.create(
         model=_model,
+        thinking={"type": "disabled"},
         max_tokens=2000,
         system=system_prompt,
         messages=[{"role": "user", "content": user_prompt}],
-        temperature=0.7,
     )
     
-    content = response.content[0].text.strip()
+    content = "".join(b.text for b in response.content if b.type == "text").strip()
     return await _parse_crew_output(content, topic)
 
 
@@ -92,12 +92,12 @@ async def generate_expert_quiz(topic: str, num_questions: int = 5) -> List[dict]
     
     response = await _get_client().messages.create(
         model=_model,
+        thinking={"type": "disabled"},
         max_tokens=2000,
         system=system_prompt,
         messages=[{"role": "user", "content": user_prompt}],
-        temperature=0.7,
     )
     
-    content = response.content[0].text.strip()
+    content = "".join(b.text for b in response.content if b.type == "text").strip()
     return await _parse_crew_output(content, topic)
 
