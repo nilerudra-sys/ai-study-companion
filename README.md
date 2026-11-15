@@ -1,151 +1,96 @@
-# Gamified AI Study Companion
+# AI Study Companion — learn AI like a Pokémon trainer
 
-A prototype study companion with:
+**[Live demo](https://ai-study-companion-rmfu.vercel.app)** · [API docs](https://zealous-tenderness-production-1695.up.railway.app/docs) · Frontend on Vercel, API on Railway
 
-- FastAPI backend for explanations, quizzes, auth, and progress tracking
-- Streamlit prototype UI in `frontend/`
-- React + Vite frontend in `frontend-retro/`
-- SQLite for local storage
-- Anthropic for AI-powered tutoring and quiz generation
+A gamified AI tutor for beginners learning AI and machine learning. Ask questions and get plain-language explanations, take AI-generated quizzes, earn XP, coins and badges, and challenge "Gym Leader" expert quizzes, all in a retro Pokémon FireRed style.
 
-## Local development
+## The problem
 
-### 1. Install backend dependencies
+Beginners start AI courses with enthusiasm and drop off within weeks. Textbook explanations assume too much, practice questions run out, and there's no sense of progress. Generic chatbots answer questions but don't track what you've learned or push you to practise.
+
+## What it does
+
+- **Explain:** ask anything about AI or ML and get a beginner-friendly answer.
+- **Quizzes on demand:** multiple-choice quizzes generated for any topic and difficulty, so practice never runs out.
+- **Gym Leader quizzes:** harder, reasoning-based questions that test real understanding instead of definitions.
+- **Progress that feels like a game:** XP, coins, levels, badges, a quiz history, and a world map of topics (Intro to AI → Machine Learning → Neural Networks → Deep Learning) that unlock as you go.
+- **Professor AI:** reads your stats and tells you, in character, where you're strongest and what to practise next.
+
+## Product decisions and trade-offs
+
+| Decision | Why | Trade-off accepted |
+| --- | --- | --- |
+| Game mechanics (XP, badges, unlockable topics) around the AI | Retention, not answers, is the hard problem for self-learners | More state and UI to build than a plain chatbot |
+| Quizzes generated per request as strict JSON | Unlimited fresh practice on any topic without writing a question bank | Needs JSON validation and a fallback when the model returns bad output |
+| One `generate_text()` helper for every AI call, provider set by an env var | Switched from Claude to Gemini by changing config, not code; easy to compare models later | Lowest-common-denominator features across providers |
+| SQLite on a persistent Railway volume | Zero-cost, zero-ops database that fits a single-instance demo | Doesn't scale past one instance; Postgres is the next step |
+| Split deploy: React on Vercel, FastAPI on Railway | Static frontend on a CDN; long-running Python API where it fits | CORS and two deploy pipelines to keep in sync |
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[React + Vite<br/>retro UI on Vercel] -->|REST /api| B[FastAPI on Railway]
+    B --> C[generate_text]
+    C -->|AI_PROVIDER=gemini| D[Gemini API]
+    C -->|AI_PROVIDER=anthropic| E[Claude API]
+    B --> F[(SQLite on<br/>Railway volume)]
+```
+
+**Stack:** React 18 + Vite · FastAPI (Python) · Gemini API via `google-genai` (Claude supported as a fallback) · SQLite · Railway · Vercel
+
+## Status and what's next
+
+- Live: signup, login, explanations, both quiz types, scoring, badges, progress and Professor AI are all working in production.
+- **Next:** real JWT authentication (the demo currently returns a placeholder token), an evaluation set to measure quiz quality across models, and moving to Postgres.
+
+---
+
+## Run it locally
+
+### 1. Backend
 
 ```bash
 pip install -r requirements.txt
-```
-
-### 2. Configure environment variables
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```bash
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-haiku-5-5
-APP_ENV=dev
-DATABASE_PATH=database/study_companion.db
-CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app
-```
-
-For the React frontend, you can also copy `frontend-retro/.env.example` to `frontend-retro/.env`:
-
-```bash
-VITE_API_BASE=http://127.0.0.1:8000/api
-```
-
-### 3. Run the backend
-
-```bash
+cp .env.example .env        # then add your GEMINI_API_KEY
 uvicorn backend.main:app --reload
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
+The API runs at `http://127.0.0.1:8000`, with interactive docs at `/docs`.
 
-### 4. Run the React frontend
+Key environment variables (see `.env.example`):
+
+| Variable | Purpose |
+| --- | --- |
+| `AI_PROVIDER` | `gemini` or `anthropic`. Defaults to `gemini` when `GEMINI_API_KEY` is set |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Gemini credentials and model (default `gemini-3.5-flash-lite`) |
+| `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | Optional Claude fallback (default `claude-haiku-5-5`) |
+| `DATABASE_PATH` | SQLite file location (`/data/study_companion.db` in production) |
+| `CORS_ALLOW_ORIGINS`, `CORS_ALLOW_ORIGIN_REGEX` | Which frontends may call the API |
+
+### 2. Frontend
 
 ```bash
 cd frontend-retro
+cp .env.example .env        # VITE_API_URL=http://127.0.0.1:8000/api for local dev
 npm install
 npm run dev
 ```
 
-### 5. Optional Streamlit frontend
+A simpler Streamlit prototype UI is also available: `streamlit run frontend/app.py`.
 
-```bash
-streamlit run frontend/app.py
-```
+## Deploy
 
-## Deploy backend to Railway
+**Backend (Railway):** create a service from this repo (`railway.json` and `Procfile` are included). Set the variables above, and attach a volume mounted at `/data` with `DATABASE_PATH=/data/study_companion.db`. Without the volume, every redeploy wipes all users and progress.
 
-This repo already includes `Procfile` and `railway.json` for the FastAPI app.
-
-### Railway setup
-
-1. Push this repo to GitHub.
-2. In Railway, create a new project from the GitHub repo.
-3. Railway should detect the Python service automatically.
-4. Set these environment variables in Railway:
-
-```bash
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-haiku-5-5
-FRONTEND_URL=https://your-vercel-app.vercel.app
-CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app
-DATABASE_PATH=/data/study_companion.db
-```
-
-### Important for SQLite on Railway
-
-Railway containers do not keep local files permanently unless you mount a volume.
-
-To keep quiz history and user data after redeploys:
-
-1. Add a Railway volume.
-2. Mount it at `/data`.
-3. Set `DATABASE_PATH=/data/study_companion.db`.
-
-### Backend URL
-
-After deployment, Railway will give you a URL like:
-
-```text
-https://your-app.up.railway.app
-```
-
-Your API base for the frontend will be:
-
-```text
-https://your-app.up.railway.app/api
-```
-
-Health check endpoint:
-
-```text
-https://your-app.up.railway.app/api/health
-```
-
-## Deploy frontend to Vercel
-
-The Vercel config in `vercel.json` is set up for the React app inside `frontend-retro/`.
-
-### Vercel setup
-
-1. Import the same GitHub repo into Vercel.
-2. Keep the repo root as-is so Vercel can use `vercel.json`.
-3. Add this environment variable in Vercel:
-
-```bash
-VITE_API_BASE=https://your-app.up.railway.app/api
-```
-
-4. Deploy.
-
-### SPA routing
-
-`vercel.json` rewrites all frontend routes to `index.html`, so client-side routes continue working after refresh.
-
-## Recommended deploy order
-
-1. Deploy the backend to Railway first.
-2. Copy the Railway public URL.
-3. Set `VITE_API_BASE` in Vercel.
-4. Deploy the frontend to Vercel.
-5. Add the final Vercel URL back into Railway as `FRONTEND_URL`.
+**Frontend (Vercel):** import the repo with root directory `frontend-retro` (Vite preset) and set `VITE_API_URL=https://<your-railway-app>.up.railway.app/api`. `vercel.json` rewrites all routes to `index.html` so client-side routing survives refreshes.
 
 ## Project structure
 
 ```text
-ai-study-companion/
-|-- backend/
-|-- database/
-|-- frontend/
-|-- frontend-retro/
-|-- prompts/
-|-- utils/
-|-- Procfile
-|-- railway.json
-|-- vercel.json
-|-- requirements.txt
+backend/          FastAPI app: routes, auth, AI service, quiz generator, gamification
+database/         SQLite access layer
+frontend-retro/   React + Vite retro UI (the live app)
+frontend/         Streamlit prototype
+prompts/          Prompt templates
 ```
